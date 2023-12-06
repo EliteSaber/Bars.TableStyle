@@ -1,20 +1,43 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:Bars.TableStyle.ViewModels"
+        xmlns:views="clr-namespace:Bars.TableStyle.Views"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:Bars.TableStyle.ViewModels"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Bars.TableStyle.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="Bars.TableStyle">
+        Title="Bars.TableStyle"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
+  <Panel>
+    <ExperimentalAcrylicBorder IsHitTestVisible="False">
+      <ExperimentalAcrylicBorder.Material>
+        <ExperimentalAcrylicMaterial
+          BackgroundSource="Digger"
+          TintColor="Black"
+          TintOpacity="1"
+          MaterialOpacity="0.65"/>
+      </ExperimentalAcrylicBorder.Material>
+    </ExperimentalAcrylicBorder>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Grid ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto" Margin="5 40 5 5">
+      <Button Grid.Row="0" Grid.Column="0" Margin="5"
+              Content="Загрузить текущую ЭФ"
+              Command="{Binding OpenFileCurrentCommand}"/>
+      <Button Grid.Row="0" Grid.Column="1" Margin="5"
+              Content="Загрузить прошлую ЭФ"
+              Command="{Binding OpenFileOldCommand}"
+              IsEnabled="{Binding IsLoaded}"/>
+      <Button Grid.Row="0" Grid.Column="2" Margin="5" HorizontalAlignment="Right"
+              Content="Сохранить"
+              Command="{Binding SaveFileCommand}"
+              IsEnabled="{Binding IsLoaded}"/>
+    </Grid>
+    <!--<views:MainButtons Margin="0 40 0 0"/>-->
+  </Panel>
 
 </Window>
