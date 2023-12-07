@@ -7,28 +7,34 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Bars.TableStyle.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace Bars.TableStyle.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
-    [ObservableProperty] private string? _fileText;
-    [ObservableProperty] private string? _fileTextOld;
+    //[ObservableProperty] private string? _fileText;
+    //[ObservableProperty] private string? _fileTextOld;
+    [ObservableProperty] private Xml? _fileCurrent;
+    [ObservableProperty] private Xml? _fileOld;
     [ObservableProperty] private bool _isLoaded;
+    [ObservableProperty] private List<string>? _tables;
 
     [RelayCommand]
     private async Task OpenFileCurrent(CancellationToken token)
     {
         await OpenFile(token, "Загрузить файл ЭФ");
-        IsLoaded = !string.IsNullOrWhiteSpace(FileText);
+        IsLoaded = FileCurrent != null;
     }
 
     [RelayCommand]
     private async Task OpenFileOld(CancellationToken token)
     {
-        (FileText, FileTextOld) = (FileTextOld, FileText);
+        (FileCurrent, FileOld) = (FileOld, FileCurrent);
         await OpenFile(token, "Загрузить файл для сравнения");
-        (FileText, FileTextOld) = (FileTextOld, FileText);
+        (FileCurrent, FileOld) = (FileOld, FileCurrent);
     }
     private async Task OpenFile(CancellationToken token, string title = "Load")
     {
@@ -42,9 +48,11 @@ public partial class MainWindowViewModel : ViewModelBase
                 return;
             if ((await file.GetBasicPropertiesAsync()).Size <= 1024 * 1024 * 10) //10MB
             {
-                await using var readStream = await file.OpenReadAsync();
-                using var reader = new StreamReader(readStream);
-                FileText = await reader.ReadToEndAsync(token);
+                FileCurrent = new(file.Path.LocalPath);
+                Tables = FileCurrent.Tables.Select(x => x.Code).ToList();
+                //await using var readStream = await file.OpenReadAsync();
+                //using var reader = new StreamReader(readStream);
+                //FileText = await reader.ReadToEndAsync(token);
             }
             else
             {
@@ -66,16 +74,18 @@ public partial class MainWindowViewModel : ViewModelBase
             var file = await filesService.SaveFileAsync();
             if (file is null)
                 return;
-            if (FileText?.Length <= 1024 * 1024 * 10) //10MB
-            {
-                var stream = new MemoryStream(Encoding.Default.GetBytes((string)FileText));
-                await using var writeStream = await file.OpenWriteAsync();
-                await stream.CopyToAsync(writeStream);
-            }
-            else
-            {
-                throw new Exception("File exceeded 10MB limit.");
-            }
+
+            FileCurrent?.Save(file.Path.LocalPath);
+            //if (FileText?.Length <= 1024 * 1024 * 10) //10MB
+            //{
+            //    var stream = new MemoryStream(Encoding.Default.GetBytes((string)FileText));
+            //    await using var writeStream = await file.OpenWriteAsync();
+            //    await stream.CopyToAsync(writeStream);
+            //}
+            //else
+            //{
+            //    throw new Exception("File exceeded 10MB limit.");
+            //}
         }
         catch (Exception ex)
         {
